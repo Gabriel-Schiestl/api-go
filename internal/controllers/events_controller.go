@@ -6,18 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type EventsController struct{
-	getEventsUseCase pkg.UseCaseDecorator
+type EventsController[R any] struct{
+	getEventsUseCase pkg.UseCaseDecorator[R]
 }
 
-func NewEventsController(getEventsUseCase pkg.UseCaseDecorator) *EventsController {
-	return &EventsController{
+func NewEventsController[R any](getEventsUseCase pkg.UseCaseDecorator[R]) *EventsController[R] {
+	return &EventsController[R]{
 		getEventsUseCase: getEventsUseCase,
 	}
 }
 
-func (ec EventsController) GetAllEvents(c *gin.Context) {
-	events, err := ec.getEventsUseCase.Execute(nil)
+func (ec EventsController[R]) GetAllEvents(c *gin.Context) {
+	events, err := ec.getEventsUseCase.Execute()
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -26,7 +26,7 @@ func (ec EventsController) GetAllEvents(c *gin.Context) {
 	c.JSON(200, events)
 }
 
-func (ec EventsController) SetupRoutes() {
+func (ec EventsController[R]) SetupRoutes() {
 	group := r.Router.Group("/events")
 
 	group.GET("/", ec.GetAllEvents)

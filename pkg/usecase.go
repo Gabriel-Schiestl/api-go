@@ -1,5 +1,9 @@
 package pkg
 
-type UseCase interface {
-	Execute() (any, error)
+type UseCase[R any] interface {
+	Execute() (R, error)
+}
+
+type UseCaseWithProps[P, R any] interface {
+	Execute(props P) (R, error)
 }
