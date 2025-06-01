@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/Gabriel-Schiestl/api-go/internal/controllers"
+	_ "github.com/Gabriel-Schiestl/api-go/internal/controllers"
 	"github.com/Gabriel-Schiestl/api-go/internal/server"
-	_ "github.com/Gabriel-Schiestl/api-go/pkg"
+	"github.com/Gabriel-Schiestl/go-clarch/presentation/controller"
 )
 
 func main() {
-	controllers.Init()
+	controller.SetupRoutes()
 
 	server.Router.Run(":8080")
 }

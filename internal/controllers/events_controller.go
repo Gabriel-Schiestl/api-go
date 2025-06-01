@@ -2,15 +2,16 @@ package controllers
 
 import (
 	r "github.com/Gabriel-Schiestl/api-go/internal/server"
-	"github.com/Gabriel-Schiestl/api-go/pkg"
+	"github.com/Gabriel-Schiestl/go-clarch/application/usecase"
+	_ "github.com/Gabriel-Schiestl/go-clarch/presentation/controller"
 	"github.com/gin-gonic/gin"
 )
 
 type EventsController[R any] struct{
-	getEventsUseCase pkg.UseCaseDecorator[R]
+	getEventsUseCase usecase.UseCaseDecorator[R]
 }
 
-func NewEventsController[R any](getEventsUseCase pkg.UseCaseDecorator[R]) *EventsController[R] {
+func NewEventsController[R any](getEventsUseCase usecase.UseCaseDecorator[R]) *EventsController[R] {
 	return &EventsController[R]{
 		getEventsUseCase: getEventsUseCase,
 	}

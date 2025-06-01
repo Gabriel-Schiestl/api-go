@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/Gabriel-Schiestl/go-clarch v1.0.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

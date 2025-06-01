@@ -2,22 +2,15 @@ package controllers
 
 import (
 	"github.com/Gabriel-Schiestl/api-go/internal/application/usecases"
-	"github.com/Gabriel-Schiestl/api-go/pkg"
+	"github.com/Gabriel-Schiestl/go-clarch/application/usecase"
+	"github.com/Gabriel-Schiestl/go-clarch/presentation/controller"
 )
 
-var Controllers = []Controller{}
+var Controllers = []controller.Controller{}
 
-func Init() {
+func init() {
 	getEventsUseCase := usecases.NewGetEventsUseCase()
-	getEventsDecorator := pkg.NewUseCaseDecorator(getEventsUseCase)
+	getEventsDecorator := usecase.NewUseCaseDecorator(getEventsUseCase)
 	eventsController := NewEventsController(getEventsDecorator)
-	Controllers = append(Controllers, eventsController)
-
-	setupRoutes()
-}
-
-func setupRoutes() {
-	for _, controller := range Controllers {
-		controller.SetupRoutes()
-	}
+	controller.Add(eventsController)
 }
