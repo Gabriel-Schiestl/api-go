@@ -4,7 +4,7 @@ import (
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/models"
 )
 
-type IRepository interface {
+type IEventRepository interface {
 	FindByID(id string) (models.Event, error)
 	FindAll() ([]models.Event, error)
 	Save(event models.Event) error

@@ -5,12 +5,17 @@ import (
 
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/models"
+	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
 )
 
-type getEventsUseCase struct{}
+type getEventsUseCase struct{
+	eventRepository repositories.IEventRepository
+}
 
-func NewGetEventsUseCase() *getEventsUseCase {
-	return &getEventsUseCase{}
+func NewGetEventsUseCase(eventRepository repositories.IEventRepository) *getEventsUseCase {
+	return &getEventsUseCase{
+		eventRepository: eventRepository,
+	}
 }
 
 func (uc *getEventsUseCase) Execute() ([]dtos.EventDto, error) {
