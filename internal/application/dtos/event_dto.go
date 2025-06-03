@@ -10,5 +10,5 @@ type EventDto struct {
 	Description string    `json:"description"`
 	OrganizerID string    `json:"organizer_id"`
 	Attendees   []string  `json:"attendees"`
-	CreatedAt   string    `json:"created_at"`
+	CreatedAt   time.Time    `json:"created_at"`
 }

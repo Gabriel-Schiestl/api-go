@@ -1,8 +1,6 @@
 package usecases
 
 import (
-	"time"
-
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
 )
@@ -31,7 +29,7 @@ func (uc *getEventsUseCase) Execute() ([]dtos.EventDto, error) {
 			Description: event.Description(),
 			Location:   event.Location(),
 			Date: 	  event.Date(),
-			CreatedAt:  event.CreatedAt().Format(time.RFC3339),
+			CreatedAt:  event.CreatedAt(),
 			OrganizerID: event.OrganizerID(),
 			Attendees: event.Attendees(),
 		}

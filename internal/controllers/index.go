@@ -12,8 +12,13 @@ var Controllers = []controller.Controller{}
 
 func init() {
 	eventRepository := database.NewEventRepository(connection.Db)
+
 	getEventsUseCase := usecases.NewGetEventsUseCase(eventRepository)
 	getEventsDecorator := usecase.NewUseCaseDecorator(getEventsUseCase)
-	eventsController := NewEventsController(getEventsDecorator)
+
+	createEventUseCase := usecases.NewCreateEventUseCase(eventRepository)
+	createEventDecorator := usecase.NewUseCaseWithPropsDecorator(createEventUseCase)
+
+	eventsController := NewEventsController(getEventsDecorator, createEventDecorator)
 	controller.Add(eventsController)
 }
