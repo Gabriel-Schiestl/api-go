@@ -6,17 +6,20 @@ import (
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/models"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
 	"github.com/Gabriel-Schiestl/api-go/internal/infra/entities"
+	"github.com/Gabriel-Schiestl/api-go/internal/infra/mappers"
 	"github.com/Gabriel-Schiestl/go-clarch/domain/exceptions"
 	"gorm.io/gorm"
 )
 
 type eventRepositoryImpl struct {
 	db *gorm.DB
+	mapper mappers.EventMapper
 }
 
-func NewEventRepository(db *gorm.DB) repositories.IEventRepository {
+func NewEventRepository(db *gorm.DB, mapper mappers.EventMapper) repositories.IEventRepository {
 	return eventRepositoryImpl{
 		db: db,
+		mapper: mapper,
 	}
 }
 
@@ -30,16 +33,7 @@ func (r eventRepositoryImpl) FindByID(id string) (models.Event, error) {
 		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving event with ID %s: %v", id, err))
 	}
 
-	domain, err := models.LoadEvent(models.EventProps{
-		ID:          &event.ID,
-		Name:        &event.Name,
-		Location:    &event.Location,
-		Date:        &event.Date,
-		Description: &event.Description,
-		OrganizerID: &event.OrganizerID,
-		Attendees:   event.Attendees,
-		CreatedAt:   &event.CreatedAt,
-	})
+	domain, err := r.mapper.ModelToDomain(event)
 	if err != nil {
 		return nil, err
 	}
@@ -49,27 +43,20 @@ func (r eventRepositoryImpl) FindByID(id string) (models.Event, error) {
 
 func (r eventRepositoryImpl) FindAll() ([]models.Event, error) {
 	var events []entities.Event
-	if err := r.db.Find(&events).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, exceptions.NewRepositoryNoDataFoundException("No events found")
-		}
 
+	if err := r.db.Find(&events).Error; err != nil {
 		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving events: %v", err))
+	}
+
+	if len(events) == 0 {
+		return nil, exceptions.NewRepositoryNoDataFoundException("No events found")
 	}
 
 	var domainEvents []models.Event
 	for _, event := range events {
-		domain, err := models.LoadEvent(models.EventProps{
-			ID:          &event.ID,
-			Name:        &event.Name,
-			Location:    &event.Location,
-			Date:        &event.Date,
-			Description: &event.Description,
-			OrganizerID: &event.OrganizerID,
-			Attendees:   event.Attendees,
-			CreatedAt:   &event.CreatedAt,
-		})
+		domain, err := r.mapper.ModelToDomain(event)
 		if err != nil {
+			fmt.Println("Error loading event:", err)
 			return nil, err
 		}
 
@@ -80,16 +67,7 @@ func (r eventRepositoryImpl) FindAll() ([]models.Event, error) {
 }
 
 func (r eventRepositoryImpl) Save(event models.Event) error {
-	entity := entities.Event{
-		ID: 		event.ID(),
-		Name:        event.Name(),
-		Location:    event.Location(),
-		Date:        event.Date(),
-		Description: event.Description(),
-		OrganizerID: event.OrganizerID(),
-		Attendees:   event.Attendees(),
-		CreatedAt:   event.CreatedAt(),
-	}
+	entity := r.mapper.DomainToModel(event)
 	if err := r.db.Save(&entity).Error; err != nil {
 		return exceptions.NewTechnicalException(fmt.Sprintf("Error saving event: %v", err))
 	}

@@ -1,10 +1,12 @@
 package connection
 
 import (
+	"database/sql"
 	"log"
 	"strconv"
 
 	"github.com/Gabriel-Schiestl/api-go/internal/config"
+	"github.com/Gabriel-Schiestl/api-go/internal/infra/entities"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,7 +14,7 @@ import (
 var DbConfig *config.DbConfig
 var Db *gorm.DB
 
-func SetupConfig(host, user, password, port, name string) {
+func SetupConfig(host, user, password, port, name string) *sql.DB {
 	dbPort, err := strconv.Atoi(port)
 	if err != nil {
 		log.Fatalf("Error converting DB_PORT to int")
@@ -30,5 +32,7 @@ func SetupConfig(host, user, password, port, name string) {
 		log.Fatalf("Error getting DB connection: %v", err)
 	}
 
-	defer sqlDb.Close()
+	Db.AutoMigrate(entities.Event{})
+
+	return sqlDb
 }

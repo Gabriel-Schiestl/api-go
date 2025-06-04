@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"fmt"
+
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
 )
@@ -18,6 +20,7 @@ func NewGetEventsUseCase(eventRepository repositories.IEventRepository) *getEven
 func (uc *getEventsUseCase) Execute() ([]dtos.EventDto, error) {
 	events, err := uc.eventRepository.FindAll()
 	if err != nil {
+		fmt.Println("GetEventsUseCase: Retrieved events:", err)
 		return nil, err
 	}
 
@@ -35,6 +38,6 @@ func (uc *getEventsUseCase) Execute() ([]dtos.EventDto, error) {
 		}
 		eventDtos = append(eventDtos, eventDto)
 	}
-
+	
 	return eventDtos, nil
 }

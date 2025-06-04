@@ -38,13 +38,13 @@ func (ec EventsController) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	event, err := ec.createEventUseCase.Execute(body)
+	_, err := ec.createEventUseCase.Execute(body)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(201, event)
+	c.JSON(201, gin.H{"message": "Event created successfully"})
 }
 
 func (ec EventsController) SetupRoutes() {

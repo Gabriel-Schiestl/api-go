@@ -40,7 +40,7 @@ type Event interface {
     CreatedAt() time.Time
 }
 
-func NewEvent(props EventProps) (Event, *exceptions.BusinessException) {
+func NewEvent(props EventProps) (Event, error) {
 	if props.Name == nil || *props.Name == "" {
 		return nil, exceptions.NewBusinessException("Event name is required")
 	}

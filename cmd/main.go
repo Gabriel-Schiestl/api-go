@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Gabriel-Schiestl/api-go/internal/controllers"
 	_ "github.com/Gabriel-Schiestl/api-go/internal/controllers"
 	"github.com/Gabriel-Schiestl/api-go/internal/infra/database/connection"
 	"github.com/Gabriel-Schiestl/api-go/internal/server"
@@ -12,14 +13,16 @@ import (
 )
 
 func main() {
-	controller.SetupRoutes()
-
-	err := godotenv.Load()
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatalf("Error loading env: %v", err)
 	}
 
-	connection.SetupConfig(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+	sqlDb := connection.SetupConfig(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
+	defer sqlDb.Close()
+
+	controllers.SetupControllers()
+	controller.SetupRoutes()
 
 	server.Router.Run(":8080")
 }
