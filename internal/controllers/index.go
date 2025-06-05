@@ -23,4 +23,24 @@ func SetupControllers() {
 
 	eventsController := NewEventsController(getEventsDecorator, createEventDecorator)
 	controller.Add(eventsController)
+	
+	userMapper := mappers.UserMapper{}
+	userRepository := database.NewUserRepository(connection.Db, userMapper)
+	getUsersUseCase := usecases.NewGetUsersUseCase(userRepository)
+	getUsersDecorator := usecase.NewUseCaseDecorator(getUsersUseCase)
+	createUserUseCase := usecases.NewCreateUserUseCase(userRepository)
+	createUserDecorator := usecase.NewUseCaseWithPropsDecorator(createUserUseCase)
+
+	usersController := NewUsersController(createUserDecorator, getUsersDecorator)
+	controller.Add(usersController)
+
+	authMapper := mappers.AuthMapper{}
+	authRepository := database.NewAuthRepository(connection.Db, authMapper)
+	getAuthsUseCase := usecases.NewGetAuthsUseCase(authRepository)
+	getAuthsDecorator := usecase.NewUseCaseDecorator(getAuthsUseCase)
+	createAuthUseCase := usecases.NewCreateAuthUseCase(authRepository)
+	createAuthDecorator := usecase.NewUseCaseWithPropsDecorator(createAuthUseCase)
+
+	authController := NewAuthController(createAuthDecorator, getAuthsDecorator)
+	controller.Add(authController)
 }
