@@ -5,6 +5,7 @@ import (
 	"github.com/Gabriel-Schiestl/api-go/internal/infra/database"
 	"github.com/Gabriel-Schiestl/api-go/internal/infra/database/connection"
 	"github.com/Gabriel-Schiestl/api-go/internal/infra/mappers"
+	"github.com/Gabriel-Schiestl/api-go/internal/infra/ports"
 	"github.com/Gabriel-Schiestl/go-clarch/application/usecase"
 	"github.com/Gabriel-Schiestl/go-clarch/presentation/controller"
 )
@@ -26,6 +27,7 @@ func SetupControllers() {
 	
 	userMapper := mappers.UserMapper{}
 	userRepository := database.NewUserRepository(connection.Db, userMapper)
+
 	getUsersUseCase := usecases.NewGetUsersUseCase(userRepository)
 	getUsersDecorator := usecase.NewUseCaseDecorator(getUsersUseCase)
 	createUserUseCase := usecases.NewCreateUserUseCase(userRepository)
@@ -36,11 +38,16 @@ func SetupControllers() {
 
 	authMapper := mappers.AuthMapper{}
 	authRepository := database.NewAuthRepository(connection.Db, authMapper)
+	jwtService := ports.NewJWTService()
+
+
 	getAuthsUseCase := usecases.NewGetAuthsUseCase(authRepository)
 	getAuthsDecorator := usecase.NewUseCaseDecorator(getAuthsUseCase)
 	createAuthUseCase := usecases.NewCreateAuthUseCase(authRepository)
 	createAuthDecorator := usecase.NewUseCaseWithPropsDecorator(createAuthUseCase)
+	loginUseCase := usecases.NewLoginUseCase(authRepository, userRepository, jwtService)
+	loginDecorator := usecase.NewUseCaseWithPropsDecorator(loginUseCase)
 
-	authController := NewAuthController(createAuthDecorator, getAuthsDecorator)
+	authController := NewAuthController(createAuthDecorator, getAuthsDecorator, loginDecorator)
 	controller.Add(authController)
 }

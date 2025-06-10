@@ -33,3 +33,12 @@ func (r *authRepositoryImpl) FindAll() ([]models.Auth, error) {
 	}
 	return auths, nil
 }
+
+func (r *authRepositoryImpl) FindByEmail(email string) (models.Auth, error) {
+	var entity entities.Auth
+	if err := r.db.Where("email = ?", email).First(&entity).Error; err != nil {
+		return nil, err
+	}
+	auth := r.mapper.ModelToDomain(&entity)
+	return auth, nil
+}

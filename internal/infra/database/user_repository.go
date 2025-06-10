@@ -33,3 +33,12 @@ func (r *userRepositoryImpl) FindAll() ([]models.User, error) {
 	}
 	return users, nil
 }
+
+func (r *userRepositoryImpl) FindByEmail(email string) (models.User, error) {
+	var entity entities.User
+	if err := r.db.Where("email = ?", email).First(&entity).Error; err != nil {
+		return nil, err
+	}
+	user := r.mapper.ModelToDomain(&entity)
+	return user, nil
+}
