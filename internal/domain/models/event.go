@@ -38,6 +38,7 @@ type Event interface {
     OrganizerID() string
     Attendees() []string
     CreatedAt() time.Time
+    AddAttendee(attendee string) error
 }
 
 func NewEvent(props EventProps) (Event, error) {
@@ -89,3 +90,17 @@ func (e *event) Description() string { return e.description }
 func (e *event) OrganizerID() string { return e.organizerID }
 func (e *event) Attendees() []string { return e.attendees }
 func (e *event) CreatedAt() time.Time { return e.createdAt }
+func (e *event) AddAttendee(attendee string) error {
+    if attendee == "" {
+        return exceptions.NewBusinessException("Attendee cannot be empty")
+    }
+    for _, a := range e.attendees {
+        if a == attendee {
+            return exceptions.NewBusinessException("Attendee already exists")
+        }
+    }
+
+    e.attendees = append(e.attendees, attendee)
+    
+    return nil
+}

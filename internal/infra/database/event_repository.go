@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var errorLoadingEvent = "Error loading event: %v"
+
 type eventRepositoryImpl struct {
 	db *gorm.DB
 	mapper mappers.EventMapper
@@ -56,7 +58,7 @@ func (r eventRepositoryImpl) FindAll() ([]models.Event, error) {
 	for _, event := range events {
 		domain, err := r.mapper.ModelToDomain(event)
 		if err != nil {
-			fmt.Println("Error loading event:", err)
+			fmt.Printf(errorLoadingEvent, err)
 			return nil, err
 		}
 
@@ -64,6 +66,74 @@ func (r eventRepositoryImpl) FindAll() ([]models.Event, error) {
 	}
 
 	return domainEvents, nil
+}
+
+func (r eventRepositoryImpl) FindByUserID(userID string) ([]models.Event, error) {
+	var events []entities.Event
+
+	if err := r.db.Where("user_id = ?", userID).Find(&events).Error; err != nil {
+		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving events for user ID %s: %v", userID, err))
+	}
+
+	if len(events) == 0 {
+		return nil, exceptions.NewRepositoryNoDataFoundException(fmt.Sprintf("No events found for user ID %s", userID))
+	}
+
+	var domainEvents []models.Event
+	for _, event := range events {
+		domain, err := r.mapper.ModelToDomain(event)
+		if err != nil {
+			fmt.Printf(errorLoadingEvent, err)
+			return nil, err
+		}
+
+		domainEvents = append(domainEvents, domain)
+	}
+
+	return domainEvents, nil
+}
+
+func (r eventRepositoryImpl) FindByOrganizerID(organizerID string) ([]models.Event, error) {
+	var events []entities.Event
+
+	if err := r.db.Where("organizer_id = ?", organizerID).Find(&events).Error; err != nil {
+		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving events for organizer ID %s: %v", organizerID, err))
+	}
+
+	if len(events) == 0 {
+		return nil, exceptions.NewRepositoryNoDataFoundException(fmt.Sprintf("No events found for organizer ID %s", organizerID))
+	}
+
+	var domainEvents []models.Event
+	for _, event := range events {
+		domain, err := r.mapper.ModelToDomain(event)
+		if err != nil {
+			fmt.Printf(errorLoadingEvent, err)
+			return nil, err
+		}
+
+		domainEvents = append(domainEvents, domain)
+	}
+
+	return domainEvents, nil
+}
+
+func (r eventRepositoryImpl) FindEventByOrganizerID(eventID, organizerID string) (models.Event, error) {
+	var event entities.Event
+
+	if err := r.db.Where("id = ? AND organizer_id = ?", eventID, organizerID).First(&event).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, exceptions.NewRepositoryNoDataFoundException(fmt.Sprintf("Event with ID %s not found for organizer ID %s", eventID, organizerID))
+		}
+		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving event with ID %s for organizer ID %s: %v", eventID, organizerID, err))
+	}
+
+	domain, err := r.mapper.ModelToDomain(event)
+	if err != nil {
+		return nil, err
+	}
+
+	return domain, nil
 }
 
 func (r eventRepositoryImpl) Save(event models.Event) error {
