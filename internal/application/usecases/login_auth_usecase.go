@@ -4,6 +4,7 @@ import (
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/services"
+	"github.com/Gabriel-Schiestl/api-go/internal/utils"
 )
 
 type loginUseCase struct {
@@ -28,7 +29,7 @@ func (uc *loginUseCase) Execute(props dtos.LoginDto) (*string, error) {
 	}
 
 	var token *string
-	if auth != nil && auth.GetPassword() == props.Password {
+	if auth != nil && utils.CheckPasswordHash(props.Password, auth.GetPassword()) {
 		token, err = uc.jwtService.GenerateToken(user.GetID())
 		if err != nil {
 			return nil, err

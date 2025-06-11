@@ -4,6 +4,7 @@ import (
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/models"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
+	"github.com/Gabriel-Schiestl/api-go/internal/utils"
 )
 
 type createUserUseCase struct {
@@ -26,9 +27,14 @@ func (uc *createUserUseCase) Execute(props dtos.CreateUserDTO) (*dtos.UserRespon
 		return nil, err
 	}
 
+	hashedPassword, err := utils.HashPassword(props.Password)
+	if err != nil {
+		return nil, err
+	}
+
 	auth := models.NewAuth(models.AuthProps{
 		Email:    &props.Email,
-		Password: &props.Password,
+		Password: &hashedPassword,
 	})
 
 	err = uc.authRepo.Create(auth)
