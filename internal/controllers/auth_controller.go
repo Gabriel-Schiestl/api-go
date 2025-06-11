@@ -4,46 +4,21 @@ import (
 	"net/http"
 
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
-	"github.com/Gabriel-Schiestl/api-go/internal/application/usecases"
+	r "github.com/Gabriel-Schiestl/api-go/internal/server"
 	"github.com/Gabriel-Schiestl/go-clarch/application/usecase"
 	"github.com/gin-gonic/gin"
 )
 
 type AuthController struct {
-	createAuthUseCase usecase.UseCaseWithPropsDecorator[usecases.CreateAuthProps, *dtos.AuthResponseDTO]
 	getAuthsUseCase   usecase.UseCaseDecorator[[]dtos.AuthResponseDTO]
-	loginUseCase  usecase.UseCaseWithPropsDecorator[usecases.LoginAuthProps, *string]
+	loginUseCase  usecase.UseCaseWithPropsDecorator[dtos.LoginDto, *string]
 }
 
-func NewAuthController(createUC usecase.UseCaseWithPropsDecorator[usecases.CreateAuthProps, *dtos.AuthResponseDTO], getUC usecase.UseCaseDecorator[[]dtos.AuthResponseDTO], loginUC usecase.UseCaseWithPropsDecorator[usecases.LoginAuthProps, *string]) *AuthController {
+func NewAuthController(getUC usecase.UseCaseDecorator[[]dtos.AuthResponseDTO], loginUC usecase.UseCaseWithPropsDecorator[dtos.LoginDto, *string]) *AuthController {
 	return &AuthController{
-		createAuthUseCase: createUC,
 		getAuthsUseCase:   getUC,
 		loginUseCase:  loginUC,
 	}
-}
-
-func (c *AuthController) RegisterRoutes(r *gin.Engine) {
-	auth := r.Group("/auth")
-	{
-		auth.POST("", c.CreateAuth)
-		auth.GET("", c.GetAuths)
-		auth.POST("/login", c.Login)
-	}
-}
-
-func (c *AuthController) CreateAuth(ctx *gin.Context) {
-	var input usecases.CreateAuthProps
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	dto, err := c.createAuthUseCase.Execute(input)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusCreated, dto)
 }
 
 func (c *AuthController) GetAuths(ctx *gin.Context) {
@@ -56,7 +31,7 @@ func (c *AuthController) GetAuths(ctx *gin.Context) {
 }
 
 func (c *AuthController) Login(ctx *gin.Context) {
-	var input usecases.LoginAuthProps
+	var input dtos.LoginDto
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -67,14 +42,16 @@ func (c *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", *token, 3600, "/", "", false, true)
+	ctx.SetCookie("Authorization", *token, 3600, "/", "", false, true)
 
-	ctx.JSON(http.StatusOK, token)
+	ctx.JSON(http.StatusOK, gin.H{
+		"token":   *token,
+	})
 }
 
 func (c *AuthController) SetupRoutes() {
-	// Use o router global, igual aos outros controllers
-	// Exemplo:
-	// r := server.Router
-	// c.RegisterRoutes(r)
+	group := r.Router.Group("/auth")
+
+	group.GET("/", c.GetAuths)
+	group.POST("/login", c.Login)
 }

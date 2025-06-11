@@ -28,14 +28,6 @@ func SetupControllers() {
 	userMapper := mappers.UserMapper{}
 	userRepository := database.NewUserRepository(connection.Db, userMapper)
 
-	getUsersUseCase := usecases.NewGetUsersUseCase(userRepository)
-	getUsersDecorator := usecase.NewUseCaseDecorator(getUsersUseCase)
-	createUserUseCase := usecases.NewCreateUserUseCase(userRepository)
-	createUserDecorator := usecase.NewUseCaseWithPropsDecorator(createUserUseCase)
-
-	usersController := NewUsersController(createUserDecorator, getUsersDecorator)
-	controller.Add(usersController)
-
 	authMapper := mappers.AuthMapper{}
 	authRepository := database.NewAuthRepository(connection.Db, authMapper)
 	jwtService := ports.NewJWTService()
@@ -43,11 +35,17 @@ func SetupControllers() {
 
 	getAuthsUseCase := usecases.NewGetAuthsUseCase(authRepository)
 	getAuthsDecorator := usecase.NewUseCaseDecorator(getAuthsUseCase)
-	createAuthUseCase := usecases.NewCreateAuthUseCase(authRepository)
-	createAuthDecorator := usecase.NewUseCaseWithPropsDecorator(createAuthUseCase)
 	loginUseCase := usecases.NewLoginUseCase(authRepository, userRepository, jwtService)
 	loginDecorator := usecase.NewUseCaseWithPropsDecorator(loginUseCase)
 
-	authController := NewAuthController(createAuthDecorator, getAuthsDecorator, loginDecorator)
+	authController := NewAuthController(getAuthsDecorator, loginDecorator)
 	controller.Add(authController)
+
+	getUsersUseCase := usecases.NewGetUsersUseCase(userRepository)
+	getUsersDecorator := usecase.NewUseCaseDecorator(getUsersUseCase)
+	createUserUseCase := usecases.NewCreateUserUseCase(userRepository, authRepository)
+	createUserDecorator := usecase.NewUseCaseWithPropsDecorator(createUserUseCase)
+
+	usersController := NewUsersController(createUserDecorator, getUsersDecorator)
+	controller.Add(usersController)
 }

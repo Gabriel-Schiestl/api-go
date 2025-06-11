@@ -36,7 +36,7 @@ func NewUser(props UserProps) User {
 	if props.CreatedAt != nil {
 		createdAt = *props.CreatedAt
 	}
-	return &user{
+	return user{
 		id:        id,
 		name:      derefString(props.Name),
 		email:     derefString(props.Email),
@@ -44,7 +44,7 @@ func NewUser(props UserProps) User {
 	}
 }
 
-func (u *user) GetID() string        { return u.id }
-func (u *user) GetName() string      { return u.name }
-func (u *user) GetEmail() string     { return u.email }
-func (u *user) GetCreatedAt() time.Time { return u.createdAt }
+func (u user) GetID() string        { return u.id }
+func (u user) GetName() string      { return u.name }
+func (u user) GetEmail() string     { return u.email }
+func (u user) GetCreatedAt() time.Time { return u.createdAt }

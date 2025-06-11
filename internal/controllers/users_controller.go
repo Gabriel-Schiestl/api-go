@@ -4,17 +4,17 @@ import (
 	"net/http"
 
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
-	"github.com/Gabriel-Schiestl/api-go/internal/application/usecases"
+	r "github.com/Gabriel-Schiestl/api-go/internal/server"
 	"github.com/Gabriel-Schiestl/go-clarch/application/usecase"
 	"github.com/gin-gonic/gin"
 )
 
 type UsersController struct {
-	createUserUseCase usecase.UseCaseWithPropsDecorator[usecases.CreateUserProps, *dtos.UserResponseDTO]
+	createUserUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateUserDTO, *dtos.UserResponseDTO]
 	getUsersUseCase   usecase.UseCaseDecorator[[]dtos.UserResponseDTO]
 }
 
-func NewUsersController(createUC usecase.UseCaseWithPropsDecorator[usecases.CreateUserProps, *dtos.UserResponseDTO], getUC usecase.UseCaseDecorator[[]dtos.UserResponseDTO]) *UsersController {
+func NewUsersController(createUC usecase.UseCaseWithPropsDecorator[dtos.CreateUserDTO, *dtos.UserResponseDTO], getUC usecase.UseCaseDecorator[[]dtos.UserResponseDTO]) *UsersController {
 	return &UsersController{
 		createUserUseCase: createUC,
 		getUsersUseCase:   getUC,
@@ -35,11 +35,7 @@ func (c *UsersController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	props := usecases.CreateUserProps{
-		Name:  input.Name,
-		Email: input.Email,
-	}
-	_, err := c.createUserUseCase.Execute(props)
+	_, err := c.createUserUseCase.Execute(input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -57,9 +53,8 @@ func (c *UsersController) GetUsers(ctx *gin.Context) {
 }
 
 func (c *UsersController) SetupRoutes() {
-	// Use o router global, igual ao EventsController
-	// Ajuste conforme o padrão do projeto
-	// Exemplo:
-	// r := server.Router
-	// c.RegisterRoutes(r)
+	group := r.Router.Group("/users")
+
+	group.GET("/", c.GetUsers)
+	group.POST("/", c.CreateUser)
 }

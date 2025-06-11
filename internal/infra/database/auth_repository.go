@@ -37,7 +37,7 @@ func (r *authRepositoryImpl) FindAll() ([]models.Auth, error) {
 func (r *authRepositoryImpl) FindByEmail(email string) (models.Auth, error) {
 	var entity entities.Auth
 	if err := r.db.Where("email = ?", email).First(&entity).Error; err != nil {
-		return nil, err
+		return models.NewAuth(models.AuthProps{}), err
 	}
 	auth := r.mapper.ModelToDomain(&entity)
 	return auth, nil

@@ -34,6 +34,7 @@ func SetupConfig(host, user, password, port, name string) *sql.DB {
 
 	Db.AutoMigrate(entities.Event{})
 	Db.AutoMigrate(entities.User{})
+	Db.AutoMigrate(entities.Auth{})
 
 	return sqlDb
 }

@@ -8,26 +8,34 @@ import (
 
 type createUserUseCase struct {
 	repo repositories.UserRepository
+	authRepo repositories.AuthRepository
 }
 
-func NewCreateUserUseCase(repo repositories.UserRepository) *createUserUseCase {
-	return &createUserUseCase{repo: repo}
+func NewCreateUserUseCase(repo repositories.UserRepository, authRepo repositories.AuthRepository) *createUserUseCase {
+	return &createUserUseCase{repo: repo, authRepo: authRepo}
 }
 
-type CreateUserProps struct {
-	Name  string
-	Email string
-}
-
-func (uc *createUserUseCase) Execute(props CreateUserProps) (*dtos.UserResponseDTO, error) {
+func (uc *createUserUseCase) Execute(props dtos.CreateUserDTO) (*dtos.UserResponseDTO, error) {
 	user := models.NewUser(models.UserProps{
 		Name:  &props.Name,
 		Email: &props.Email,
 	})
+
 	err := uc.repo.Create(user)
 	if err != nil {
 		return nil, err
 	}
+
+	auth := models.NewAuth(models.AuthProps{
+		Email:    &props.Email,
+		Password: &props.Password,
+	})
+
+	err = uc.authRepo.Create(auth)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dtos.UserResponseDTO{
 		ID:        user.GetID(),
 		Name:      user.GetName(),
