@@ -32,6 +32,7 @@ func (uc *GetEventsByOrganizerUseCase) Execute(organizerId string) ([]dtos.Event
 			OrganizerID: event.OrganizerID(),
 			Attendees:   event.Attendees(),
 			CreatedAt:   event.CreatedAt(),
+			Category: 	 event.Category(),
 		})
 	}
 	

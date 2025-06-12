@@ -16,6 +16,7 @@ type EventProps struct {
     OrganizerID *string
     Attendees   []string
     CreatedAt   *time.Time
+    Category    *string
 }
 
 type event struct {
@@ -27,6 +28,7 @@ type event struct {
     organizerID string
     attendees   []string
     createdAt   time.Time
+    category    string
 }
 
 type Event interface {
@@ -38,6 +40,7 @@ type Event interface {
     OrganizerID() string
     Attendees() []string
     CreatedAt() time.Time
+    Category() string
     AddAttendee(attendee string) error
 }
 
@@ -55,6 +58,10 @@ func NewEvent(props EventProps) (Event, error) {
 		return nil, exceptions.NewBusinessException("Organizer ID is required")
 	}
 
+    if props.Category == nil || *props.Category == "" {
+        return nil, exceptions.NewBusinessException("Event category is required")
+    }
+
 	event := &event{
 		name:        *props.Name,
 		location:    *props.Location,
@@ -63,6 +70,7 @@ func NewEvent(props EventProps) (Event, error) {
 		organizerID: *props.OrganizerID,
 		attendees:   props.Attendees,
 		createdAt:   time.Now(),
+        category:    *props.Category,
     }
 
     if props.ID == nil || *props.ID == "" {
@@ -90,6 +98,7 @@ func (e *event) Description() string { return e.description }
 func (e *event) OrganizerID() string { return e.organizerID }
 func (e *event) Attendees() []string { return e.attendees }
 func (e *event) CreatedAt() time.Time { return e.createdAt }
+func (e *event) Category() string {return e.category}
 func (e *event) AddAttendee(attendee string) error {
     if attendee == "" {
         return exceptions.NewBusinessException("Attendee cannot be empty")
