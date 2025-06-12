@@ -24,6 +24,7 @@ type CreateEventProps struct {
 	Date        time.Time
 	Description string
 	OrganizerID string
+	Category	string
 }
 
 func (uc *createEventUseCase) Execute(props CreateEventProps) (*dtos.EventDto, error) {
@@ -35,6 +36,7 @@ func (uc *createEventUseCase) Execute(props CreateEventProps) (*dtos.EventDto, e
 		Date:        &props.Date,
 		Description: &props.Description,
 		OrganizerID: &props.OrganizerID,
+		Category: 	 &props.Category,
 	}); 
 	if businessErr != nil {
 		return nil, businessErr
@@ -54,5 +56,6 @@ func (uc *createEventUseCase) Execute(props CreateEventProps) (*dtos.EventDto, e
 		OrganizerID: event.OrganizerID(),
 		Attendees:   event.Attendees(),
 		CreatedAt:   event.CreatedAt(),
+		Category: 	 event.Category(),
 	}, nil
 }
