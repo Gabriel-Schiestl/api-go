@@ -75,6 +75,7 @@ func (uc *getEventByOrganizerUseCase) Execute(props GetEventByOrganizerUseCasePr
 		OrganizerID: event.OrganizerID(),
 		Attendees: 	users,
 		CreatedAt: event.CreatedAt(),
+		Category: 	 event.Category(),
 	}
 	
 	return eventDto, nil

@@ -17,6 +17,7 @@ func (m EventMapper) DomainToModel(event models.Event) entities.Event {
 		OrganizerID: event.OrganizerID(),
 		Attendees:   event.Attendees(),
 		CreatedAt:   event.CreatedAt(),
+		Category:    event.Category(),
 	}
 }
 
@@ -30,6 +31,7 @@ func (m EventMapper) ModelToDomain(event entities.Event) (models.Event, error) {
 		OrganizerID: &event.OrganizerID,
 		Attendees:   event.Attendees,
 		CreatedAt:   &event.CreatedAt,
+		Category:    &event.Category,
 	})
 	if err != nil {
 		return nil, err

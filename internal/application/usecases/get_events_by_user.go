@@ -39,6 +39,7 @@ func (uc *getEventsByUserUseCase) Execute(userId string) ([]dtos.EventDto, error
 			OrganizerID: event.OrganizerID(),
 			Attendees: event.Attendees(),
 			CreatedAt:  event.CreatedAt(),
+			Category: 	 event.Category(),
 		})
 	}
 	return eventDtos, nil

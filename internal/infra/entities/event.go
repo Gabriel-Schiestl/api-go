@@ -15,4 +15,5 @@ type Event struct {
 	OrganizerID string `gorm:"not null;type:varchar(255)"`
 	Attendees   utils.StringArray `gorm:"type:json"`
 	CreatedAt   time.Time `gorm:"autoCreateTime;not null"`
+	Category	string `gorm:"not null;type:varchar(255)"`
 }

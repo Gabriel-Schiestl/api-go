@@ -30,6 +30,7 @@ func (uc *getEventByIdUseCase) Execute(id string) (dtos.EventDto, error) {
 		OrganizerID: event.OrganizerID(),
 		Attendees:   event.Attendees(),
 		CreatedAt:   event.CreatedAt(),
+		Category: 	 event.Category(),
 	}
 
 	
