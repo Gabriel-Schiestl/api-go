@@ -53,11 +53,19 @@ func (ec EventsController) GetAllEvents(c *gin.Context) {
 }
 
 func (ec EventsController) CreateEvent(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists || userID == "" {
+		c.JSON(400, userIDRequired)
+		return
+	}
+
 	body := usecases.CreateEventProps{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
 		return
 	}
+
+	body.OrganizerID = userID.(string)
 
 	_, err := ec.createEventUseCase.Execute(body)
 	if err != nil {
