@@ -12,6 +12,7 @@ type EventDto struct {
 	Attendees   []string  `json:"attendees"`
 	CreatedAt   time.Time    `json:"created_at"`
 	Category	string    `json:"category"`
+	Limit 	 int       `json:"limit"`
 }
 
 type EventWithAttendeesDto struct {
@@ -24,4 +25,5 @@ type EventWithAttendeesDto struct {
 	Attendees   []UserResponseDTO `json:"attendees"`
 	CreatedAt   time.Time `json:"created_at"`
 	Category	string    `json:"category"`
+	Limit 	 int       `json:"limit"`
 }

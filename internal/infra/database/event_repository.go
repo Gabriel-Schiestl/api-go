@@ -136,6 +136,56 @@ func (r eventRepositoryImpl) FindEventByOrganizerID(eventID, organizerID string)
 	return domain, nil
 }
 
+func (r eventRepositoryImpl) FindByCategory(category string) ([]models.Event, error) {
+	var events []entities.Event
+
+	if err := r.db.Where("category = ?", category).Find(&events).Error; err != nil {
+		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving events for category %s: %v", category, err))
+	}
+
+	if len(events) == 0 {
+		return nil, exceptions.NewRepositoryNoDataFoundException(fmt.Sprintf("No events found for category %s", category))
+	}
+
+	var domainEvents []models.Event
+	for _, event := range events {
+		domain, err := r.mapper.ModelToDomain(event)
+		if err != nil {
+			fmt.Printf(errorLoadingEvent, err)
+			return nil, err
+		}
+
+		domainEvents = append(domainEvents, domain)
+	}
+
+	return domainEvents, nil
+}
+
+func (r eventRepositoryImpl) FindByTerm(term string) ([]models.Event, error) {
+	var events []entities.Event
+
+	if err := r.db.Where("name LIKE ? OR description LIKE ?", "%"+term+"%", "%"+term+"%").Find(&events).Error; err != nil {
+		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving events by term %s: %v", term, err))
+	}
+
+	if len(events) == 0 {
+		return nil, exceptions.NewRepositoryNoDataFoundException(fmt.Sprintf("No events found for term %s", term))
+	}
+
+	var domainEvents []models.Event
+	for _, event := range events {
+		domain, err := r.mapper.ModelToDomain(event)
+		if err != nil {
+			fmt.Printf(errorLoadingEvent, err)
+			return nil, err
+		}
+
+		domainEvents = append(domainEvents, domain)
+	}
+
+	return domainEvents, nil
+}
+
 func (r eventRepositoryImpl) Save(event models.Event) error {
 	entity := r.mapper.DomainToModel(event)
 	if err := r.db.Save(&entity).Error; err != nil {

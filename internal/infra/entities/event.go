@@ -16,4 +16,5 @@ type Event struct {
 	Attendees   utils.StringArray `gorm:"type:json"`
 	CreatedAt   time.Time `gorm:"autoCreateTime;not null"`
 	Category	string `gorm:"not null;type:varchar(255)"`
+	Limit       int `gorm:"not null;default:0"`
 }

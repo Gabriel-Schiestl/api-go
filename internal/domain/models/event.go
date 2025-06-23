@@ -17,6 +17,7 @@ type EventProps struct {
     Attendees   []string
     CreatedAt   *time.Time
     Category    *string
+    Limit       *int
 }
 
 type event struct {
@@ -29,6 +30,7 @@ type event struct {
     attendees   []string
     createdAt   time.Time
     category    string
+    limit       int
 }
 
 type Event interface {
@@ -41,6 +43,7 @@ type Event interface {
     Attendees() []string
     CreatedAt() time.Time
     Category() string
+    Limit() int
     AddAttendee(attendee string) error
 }
 
@@ -62,6 +65,10 @@ func NewEvent(props EventProps) (Event, error) {
         return nil, exceptions.NewBusinessException("Event category is required")
     }
 
+    if props.Limit == nil || *props.Limit < 0 {
+        return nil, exceptions.NewBusinessException("Event limit cannot be negative")
+    }
+
 	event := &event{
 		name:        *props.Name,
 		location:    *props.Location,
@@ -71,6 +78,7 @@ func NewEvent(props EventProps) (Event, error) {
 		attendees:   props.Attendees,
 		createdAt:   time.Now(),
         category:    *props.Category,
+        limit:       *props.Limit,
     }
 
     if props.ID == nil || *props.ID == "" {
@@ -90,19 +98,19 @@ func LoadEvent(props EventProps) (Event, error) {
 	return NewEvent(props)
 }
 
-func (e *event) ID() string { return e.id }
-func (e *event) Name() string { return e.name }
-func (e *event) Location() string { return e.location }
-func (e *event) Date() time.Time { return e.date }
-func (e *event) Description() string { return e.description }
-func (e *event) OrganizerID() string { return e.organizerID }
-func (e *event) Attendees() []string { return e.attendees }
-func (e *event) CreatedAt() time.Time { return e.createdAt }
-func (e *event) Category() string {return e.category}
 func (e *event) AddAttendee(attendee string) error {
     if attendee == "" {
         return exceptions.NewBusinessException("Attendee cannot be empty")
     }
+
+    if len(e.attendees) >= e.limit && e.limit > 0 {
+        return exceptions.NewBusinessException("Event attendee limit reached")
+    }
+
+    if attendee == e.organizerID {
+        return exceptions.NewBusinessException("Organizer cannot be an attendee")
+    }
+
     for _, a := range e.attendees {
         if a == attendee {
             return exceptions.NewBusinessException("Attendee already exists")
@@ -113,3 +121,14 @@ func (e *event) AddAttendee(attendee string) error {
     
     return nil
 }
+
+func (e *event) ID() string { return e.id }
+func (e *event) Name() string { return e.name }
+func (e *event) Location() string { return e.location }
+func (e *event) Date() time.Time { return e.date }
+func (e *event) Description() string { return e.description }
+func (e *event) OrganizerID() string { return e.organizerID }
+func (e *event) Attendees() []string { return e.attendees }
+func (e *event) CreatedAt() time.Time { return e.createdAt }
+func (e *event) Category() string {return e.category}
+func (e *event) Limit() int { return e.limit }
