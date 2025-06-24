@@ -11,7 +11,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	service := ports.NewJWTService()
 
 	return func(c *gin.Context) {
-		if c.FullPath() == "/auth/login" || (c.FullPath() == "/users/" && c.Request.Method == "POST") {
+		if c.FullPath() == "/auth/login" || c.FullPath() == "/auth/logout" || (c.FullPath() == "/users/" && c.Request.Method == "POST") {
 			c.Next()
 			return
 		}
