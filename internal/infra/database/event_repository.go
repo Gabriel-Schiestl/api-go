@@ -68,10 +68,18 @@ func (r eventRepositoryImpl) FindAll() ([]models.Event, error) {
 	return domainEvents, nil
 }
 
-func (r eventRepositoryImpl) FindByUserID(userID string) ([]models.Event, error) {
+func (r eventRepositoryImpl) FindByAttendee(userID string) ([]models.Event, error) {
 	var events []entities.Event
 
-	if err := r.db.Where("user_id = ?", userID).Find(&events).Error; err != nil {
+	query := `
+        SELECT * FROM events 
+        WHERE EXISTS (
+            SELECT 1 FROM json_array_elements_text(attendees) AS attendee 
+            WHERE attendee = ?
+        )
+    `
+
+	if err := r.db.Raw(query, userID).Scan(&events).Error; err != nil {
 		return nil, exceptions.NewTechnicalException(fmt.Sprintf("Error retrieving events for user ID %s: %v", userID, err))
 	}
 

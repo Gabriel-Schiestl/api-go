@@ -15,6 +15,16 @@ type EventDto struct {
 	Limit 	 int       `json:"limit"`
 }
 
+type CreateEventProps struct {
+	Name        string    `json:"name"`
+    Location    string    `json:"location"`
+    Date        time.Time `json:"date"`
+    Description string    `json:"description"`
+    OrganizerID string    
+    Category    string    `json:"category"`
+    Limit       int       `json:"limit"`
+}
+
 type EventWithAttendeesDto struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`

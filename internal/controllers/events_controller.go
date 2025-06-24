@@ -14,7 +14,7 @@ var eventIDRequired = gin.H{"error": "Event ID is required"}
 
 type EventsController struct{
 	getEventsUseCase usecase.UseCaseDecorator[[]dtos.EventDto]
-	createEventUseCase usecase.UseCaseWithPropsDecorator[usecases.CreateEventProps, *dtos.EventDto]
+	createEventUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateEventProps, *dtos.EventDto]
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
 	getEventByIdUseCase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto]
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string]
@@ -26,7 +26,7 @@ type EventsController struct{
 
 func NewEventsController(
 	getEventsUseCase usecase.UseCaseDecorator[[]dtos.EventDto],
-	createEventUseCase usecase.UseCaseWithPropsDecorator[usecases.CreateEventProps, *dtos.EventDto],
+	createEventUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateEventProps, *dtos.EventDto],
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
 	getEventByIdUsecase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto],
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string],
@@ -65,7 +65,7 @@ func (ec EventsController) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	body := usecases.CreateEventProps{}
+	body := dtos.CreateEventProps{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
 		return
@@ -142,7 +142,7 @@ func (ec EventsController) RegisterToEvent(c *gin.Context) {
 }
 
 func (ec EventsController) GetEventByOrganizer(c *gin.Context) {
-	eventId := c.Param("eventId")
+	eventId := c.Param("eventID")
 	userID, exists := c.Get("userID")
 	if !exists || userID == "" {
 		c.JSON(400, userIDRequired)
