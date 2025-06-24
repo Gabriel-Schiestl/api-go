@@ -36,6 +36,7 @@ func (uc *getEventsUseCase) Execute() ([]dtos.EventDto, error) {
 			OrganizerID: event.OrganizerID(),
 			Attendees: event.Attendees(),
 			Category: 	 event.Category(),
+			Limit:       event.Limit(),
 		}
 		eventDtos = append(eventDtos, eventDto)
 	}

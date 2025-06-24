@@ -16,7 +16,7 @@ func NewGetEventsByOrganizerUseCase(eventRepo repositories.IEventRepository) *Ge
 }
 
 func (uc *GetEventsByOrganizerUseCase) Execute(organizerId string) ([]dtos.EventDto, error) {
-	events, err := uc.eventRepo.FindByUserID(organizerId)
+	events, err := uc.eventRepo.FindByOrganizerID(organizerId)
 	if err != nil {
 		return nil, err
 	}

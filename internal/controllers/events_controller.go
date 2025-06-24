@@ -14,22 +14,26 @@ var eventIDRequired = gin.H{"error": "Event ID is required"}
 
 type EventsController struct{
 	getEventsUseCase usecase.UseCaseDecorator[[]dtos.EventDto]
-	createEventUseCase usecase.UseCaseWithPropsDecorator[usecases.CreateEventProps, *dtos.EventDto]
+	createEventUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateEventProps, *dtos.EventDto]
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
 	getEventByIdUseCase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto]
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string]
 	getEventByOrganizerUseCase usecase.UseCaseWithPropsDecorator[usecases.GetEventByOrganizerUseCaseProps, dtos.EventWithAttendeesDto]
 	getEventsByOrganizerUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
+	getEventsByCategoryUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
+	getEventsByTermUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
 }
 
 func NewEventsController(
 	getEventsUseCase usecase.UseCaseDecorator[[]dtos.EventDto],
-	createEventUseCase usecase.UseCaseWithPropsDecorator[usecases.CreateEventProps, *dtos.EventDto],
+	createEventUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateEventProps, *dtos.EventDto],
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
 	getEventByIdUsecase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto],
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string],
 	getEventByOrganizerUseCase usecase.UseCaseWithPropsDecorator[usecases.GetEventByOrganizerUseCaseProps, dtos.EventWithAttendeesDto],
 	getEventsByOrganizerUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
+	getEventsByCategoryUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
+	getEventsByTermUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
 ) *EventsController {
 	return &EventsController{
 		getEventsUseCase: getEventsUseCase,
@@ -39,6 +43,8 @@ func NewEventsController(
 		registerToEventUseCase: registerToEventUseCase,
 		getEventByOrganizerUseCase: getEventByOrganizerUseCase,
 		getEventsByOrganizerUseCase: getEventsByOrganizerUseCase,
+		getEventsByCategoryUseCase: getEventsByCategoryUseCase,
+		getEventsByTermUseCase: getEventsByTermUseCase,
 	}
 }
 
@@ -59,7 +65,7 @@ func (ec EventsController) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	body := usecases.CreateEventProps{}
+	body := dtos.CreateEventProps{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
 		return
@@ -136,7 +142,7 @@ func (ec EventsController) RegisterToEvent(c *gin.Context) {
 }
 
 func (ec EventsController) GetEventByOrganizer(c *gin.Context) {
-	eventId := c.Param("eventId")
+	eventId := c.Param("eventID")
 	userID, exists := c.Get("userID")
 	if !exists || userID == "" {
 		c.JSON(400, userIDRequired)
@@ -178,6 +184,38 @@ func (ec EventsController) GetEventsByOrganizer(c *gin.Context) {
 	c.JSON(200, events)
 }
 
+func (ec EventsController) GetEventsByCategory(c *gin.Context) {
+	category := c.Query("category")
+	if category == "" {
+		c.JSON(400, gin.H{"error": "Category is required"})
+		return
+	}
+
+	events, err := ec.getEventsByCategoryUseCase.Execute(category)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, events)
+}
+
+func (ec EventsController) GetEventsByTerm(c *gin.Context) {
+	term := c.Query("term")
+	if term == "" {
+		c.JSON(400, gin.H{"error": "Search term is required"})
+		return
+	}
+
+	events, err := ec.getEventsByTermUseCase.Execute(term)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, events)
+}
+
 func (ec EventsController) SetupRoutes() {
 	group := r.Router.Group("/events")
 
@@ -188,4 +226,6 @@ func (ec EventsController) SetupRoutes() {
 	group.POST("/:eventID/register", ec.RegisterToEvent)
 	group.GET("/:eventID/organizer", ec.GetEventByOrganizer)
 	group.GET("/organizer", ec.GetEventsByOrganizer)
+	group.GET("/category", ec.GetEventsByCategory)
+	group.GET("/search", ec.GetEventsByTerm)
 }

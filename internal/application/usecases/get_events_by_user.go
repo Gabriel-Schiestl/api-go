@@ -23,7 +23,7 @@ func (uc *getEventsByUserUseCase) Execute(userId string) ([]dtos.EventDto, error
 		return nil, err
 	}
 
-	events, err := uc.eventRepo.FindByUserID(user.GetID())
+	events, err := uc.eventRepo.FindByAttendee(user.GetID())
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +40,7 @@ func (uc *getEventsByUserUseCase) Execute(userId string) ([]dtos.EventDto, error
 			Attendees: event.Attendees(),
 			CreatedAt:  event.CreatedAt(),
 			Category: 	 event.Category(),
+			Limit: 	 event.Limit(),
 		})
 	}
 	return eventDtos, nil

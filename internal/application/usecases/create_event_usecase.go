@@ -1,8 +1,6 @@
 package usecases
 
 import (
-	"time"
-
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/models"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
@@ -18,16 +16,9 @@ func NewCreateEventUseCase(eventRepository repositories.IEventRepository) *creat
 	}
 }
 
-type CreateEventProps struct {
-	Name        string
-	Location    string
-	Date        time.Time
-	Description string
-	OrganizerID string
-	Category	string
-}
 
-func (uc *createEventUseCase) Execute(props CreateEventProps) (*dtos.EventDto, error) {
+
+func (uc *createEventUseCase) Execute(props dtos.CreateEventProps) (*dtos.EventDto, error) {
 	var event models.Event
 
 	event, businessErr := models.NewEvent(models.EventProps{
@@ -37,6 +28,7 @@ func (uc *createEventUseCase) Execute(props CreateEventProps) (*dtos.EventDto, e
 		Description: &props.Description,
 		OrganizerID: &props.OrganizerID,
 		Category: 	 &props.Category,
+		Limit:       &props.Limit,
 	}); 
 	if businessErr != nil {
 		return nil, businessErr

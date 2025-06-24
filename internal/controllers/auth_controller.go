@@ -54,4 +54,8 @@ func (c *AuthController) SetupRoutes() {
 
 	group.GET("/", c.GetAuths)
 	group.POST("/login", c.Login)
+	group.GET("/logout", func(ctx *gin.Context) {
+		ctx.SetCookie("Authorization", "", -1, "/", "", false, true)
+		ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+	})
 }

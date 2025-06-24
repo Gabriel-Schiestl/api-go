@@ -12,6 +12,17 @@ type EventDto struct {
 	Attendees   []string  `json:"attendees"`
 	CreatedAt   time.Time    `json:"created_at"`
 	Category	string    `json:"category"`
+	Limit 	 int       `json:"limit"`
+}
+
+type CreateEventProps struct {
+	Name        string    `json:"name"`
+    Location    string    `json:"location"`
+    Date        time.Time `json:"date"`
+    Description string    `json:"description"`
+    OrganizerID string    
+    Category    string    `json:"category"`
+    Limit       int       `json:"limit"`
 }
 
 type EventWithAttendeesDto struct {
@@ -24,4 +35,5 @@ type EventWithAttendeesDto struct {
 	Attendees   []UserResponseDTO `json:"attendees"`
 	CreatedAt   time.Time `json:"created_at"`
 	Category	string    `json:"category"`
+	Limit 	 int       `json:"limit"`
 }
