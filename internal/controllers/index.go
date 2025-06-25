@@ -38,7 +38,7 @@ func SetupControllers() {
 	getEventsByUserUseCase := usecases.NewGetEventsByUserUseCase(userRepository, eventRepository)
 	getEventsByUserDecorator := usecase.NewUseCaseWithPropsDecorator(getEventsByUserUseCase)
 
-	getEventByIdUseCase := usecases.NewGetEventByIdUseCase(eventRepository)
+	getEventByIdUseCase := usecases.NewGetEventByIdUseCase(eventRepository, userRepository)
 	getEventByIdDecorator := usecase.NewUseCaseWithPropsDecorator(getEventByIdUseCase)
 
 	registerToEventUseCase := usecases.NewRegisterToEventUseCase(userRepository, eventRepository)

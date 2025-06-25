@@ -22,7 +22,7 @@ type EventsController struct{
 	updateEventUseCase usecase.UseCaseWithPropsDecorator[dtos.UpdateEventProps, *dtos.EventDto]
 	deleteEventUseCase usecase.UseCaseWithPropsDecorator[usecases.DeleteEventProps, struct{}]
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
-	getEventByIdUseCase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto]
+	getEventByIdUseCase usecase.UseCaseWithPropsDecorator[usecases.GetEventByIdUseCaseProps, dtos.EventWithAttendeesDto]
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string]
 	getEventByOrganizerUseCase usecase.UseCaseWithPropsDecorator[usecases.GetEventByOrganizerUseCaseProps, dtos.EventWithAttendeesDto]
 	getEventsByOrganizerUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
@@ -36,7 +36,7 @@ func NewEventsController(
 	updateEventUseCase usecase.UseCaseWithPropsDecorator[dtos.UpdateEventProps, *dtos.EventDto],
 	deleteEventUseCase usecase.UseCaseWithPropsDecorator[usecases.DeleteEventProps, struct{}],
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
-	getEventByIdUsecase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto],
+	getEventByIdUsecase usecase.UseCaseWithPropsDecorator[usecases.GetEventByIdUseCaseProps, dtos.EventWithAttendeesDto],
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string],
 	getEventByOrganizerUseCase usecase.UseCaseWithPropsDecorator[usecases.GetEventByOrganizerUseCaseProps, dtos.EventWithAttendeesDto],
 	getEventsByOrganizerUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
@@ -119,7 +119,16 @@ func (ec EventsController) GetEventById(c *gin.Context) {
 		return
 	}
 
-	event, err := ec.getEventByIdUseCase.Execute(eventID)
+	userID, exists := c.Get("userID")
+	if !exists || userID == "" {
+		c.JSON(400, userIDRequired)
+		return	
+	}
+
+	event, err := ec.getEventByIdUseCase.Execute(usecases.GetEventByIdUseCaseProps{
+		EventID: eventID,
+		UserID:  userID.(string),
+	})
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
