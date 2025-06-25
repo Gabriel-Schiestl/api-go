@@ -29,6 +29,12 @@ func SetupControllers() {
 	createEventUseCase := usecases.NewCreateEventUseCase(eventRepository)
 	createEventDecorator := usecase.NewUseCaseWithPropsDecorator(createEventUseCase)
 
+	updateEventUseCase := usecases.NewUpdateEventUseCase(eventRepository)
+	updateEventDecorator := usecase.NewUseCaseWithPropsDecorator(updateEventUseCase)
+
+	deleteEventUseCase := usecases.NewDeleteEventUseCase(eventRepository)
+	deleteEventDecorator := usecase.NewUseCaseWithPropsDecorator(deleteEventUseCase)
+
 	getEventsByUserUseCase := usecases.NewGetEventsByUserUseCase(userRepository, eventRepository)
 	getEventsByUserDecorator := usecase.NewUseCaseWithPropsDecorator(getEventsByUserUseCase)
 
@@ -53,6 +59,8 @@ func SetupControllers() {
 	eventsController := NewEventsController(
 		getEventsDecorator,
 		createEventDecorator,
+		updateEventDecorator,
+		deleteEventDecorator,
 		getEventsByUserDecorator,
 		getEventByIdDecorator,
 		registerToEventDecorator,
@@ -75,7 +83,9 @@ func SetupControllers() {
 	getUsersDecorator := usecase.NewUseCaseDecorator(getUsersUseCase)
 	createUserUseCase := usecases.NewCreateUserUseCase(userRepository, authRepository)
 	createUserDecorator := usecase.NewUseCaseWithPropsDecorator(createUserUseCase)
+	getUserUseCase := usecases.NewGetUserUseCase(userRepository)
+	getUserDecorator := usecase.NewUseCaseWithPropsDecorator(getUserUseCase)
 
-	usersController := NewUsersController(createUserDecorator, getUsersDecorator)
+	usersController := NewUsersController(createUserDecorator, getUsersDecorator, getUserDecorator)
 	controller.Add(usersController)
 }

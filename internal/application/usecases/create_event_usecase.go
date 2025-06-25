@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"time"
+
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/models"
 	"github.com/Gabriel-Schiestl/api-go/internal/domain/repositories"
@@ -21,10 +23,15 @@ func NewCreateEventUseCase(eventRepository repositories.IEventRepository) *creat
 func (uc *createEventUseCase) Execute(props dtos.CreateEventProps) (*dtos.EventDto, error) {
 	var event models.Event
 
+	parsedDate, err := time.Parse("2006-01-02T15:04", props.Date)
+	if err != nil {
+		return nil, err
+	}
+
 	event, businessErr := models.NewEvent(models.EventProps{
 		Name:        &props.Name,
 		Location:    &props.Location,
-		Date:        &props.Date,
+		Date:        &parsedDate,
 		Description: &props.Description,
 		OrganizerID: &props.OrganizerID,
 		Category: 	 &props.Category,
@@ -34,9 +41,9 @@ func (uc *createEventUseCase) Execute(props dtos.CreateEventProps) (*dtos.EventD
 		return nil, businessErr
 	}
 
-	err := uc.eventRepository.Save(event)
-	if err != nil {
-		return nil, err
+	saveErr := uc.eventRepository.Save(event)
+	if saveErr != nil {
+		return nil, saveErr
 	}
 
 	return &dtos.EventDto{

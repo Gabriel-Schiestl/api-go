@@ -58,4 +58,13 @@ func (c *AuthController) SetupRoutes() {
 		ctx.SetCookie("Authorization", "", -1, "/", "", false, true)
 		ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 	})
+	group.GET("/check", func(ctx *gin.Context) {
+		userID, exists := ctx.Get("userID")
+		if !exists {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"userID": userID})
+	})
 }

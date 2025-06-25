@@ -12,12 +12,14 @@ import (
 type UsersController struct {
 	createUserUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateUserDTO, *dtos.UserResponseDTO]
 	getUsersUseCase   usecase.UseCaseDecorator[[]dtos.UserResponseDTO]
+	getUserUseCase   usecase.UseCaseWithPropsDecorator[string, dtos.UserResponseDTO]
 }
 
-func NewUsersController(createUC usecase.UseCaseWithPropsDecorator[dtos.CreateUserDTO, *dtos.UserResponseDTO], getUC usecase.UseCaseDecorator[[]dtos.UserResponseDTO]) *UsersController {
+func NewUsersController(createUC usecase.UseCaseWithPropsDecorator[dtos.CreateUserDTO, *dtos.UserResponseDTO], getUC usecase.UseCaseDecorator[[]dtos.UserResponseDTO], getUserUC usecase.UseCaseWithPropsDecorator[string, dtos.UserResponseDTO]) *UsersController {
 	return &UsersController{
 		createUserUseCase: createUC,
 		getUsersUseCase:   getUC,
+		getUserUseCase:   getUserUC,
 	}
 }
 
@@ -43,6 +45,21 @@ func (c *UsersController) CreateUser(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
+func (c *UsersController) GetUser(ctx *gin.Context) {
+	id := ctx.Param("ID")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
+		return
+	}
+
+	user, err := c.getUserUseCase.Execute(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
+}
+
 func (c *UsersController) GetUsers(ctx *gin.Context) {
 	users, err := c.getUsersUseCase.Execute()
 	if err != nil {
@@ -56,5 +73,6 @@ func (c *UsersController) SetupRoutes() {
 	group := r.Router.Group("/users")
 
 	group.GET("/", c.GetUsers)
+	group.GET("/:ID", c.GetUser)
 	group.POST("/", c.CreateUser)
 }

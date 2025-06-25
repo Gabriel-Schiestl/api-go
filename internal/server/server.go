@@ -12,12 +12,12 @@ func init() {
 	Router = gin.New()
 
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowOrigins = []string{"http://localhost:5173"}
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
 	config.AllowCredentials = true
 
 	Router.Use(gin.Recovery())
-	Router.Use(middlewares.AuthMiddleware())
 	Router.Use(cors.New(config))
+	Router.Use(middlewares.AuthMiddleware())
 }

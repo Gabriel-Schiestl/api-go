@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/Gabriel-Schiestl/api-go/internal/application/dtos"
 	"github.com/Gabriel-Schiestl/api-go/internal/application/usecases"
 	r "github.com/Gabriel-Schiestl/api-go/internal/server"
@@ -11,10 +13,14 @@ import (
 
 var userIDRequired = gin.H{"error": "User ID is required"}
 var eventIDRequired = gin.H{"error": "Event ID is required"}
+const useCaseErrorLog = "UseCase error: %v"
+const eventIDRoute = "/:eventID"
 
 type EventsController struct{
 	getEventsUseCase usecase.UseCaseDecorator[[]dtos.EventDto]
 	createEventUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateEventProps, *dtos.EventDto]
+	updateEventUseCase usecase.UseCaseWithPropsDecorator[dtos.UpdateEventProps, *dtos.EventDto]
+	deleteEventUseCase usecase.UseCaseWithPropsDecorator[usecases.DeleteEventProps, struct{}]
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto]
 	getEventByIdUseCase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto]
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string]
@@ -27,6 +33,8 @@ type EventsController struct{
 func NewEventsController(
 	getEventsUseCase usecase.UseCaseDecorator[[]dtos.EventDto],
 	createEventUseCase usecase.UseCaseWithPropsDecorator[dtos.CreateEventProps, *dtos.EventDto],
+	updateEventUseCase usecase.UseCaseWithPropsDecorator[dtos.UpdateEventProps, *dtos.EventDto],
+	deleteEventUseCase usecase.UseCaseWithPropsDecorator[usecases.DeleteEventProps, struct{}],
 	getEventsByUserUseCase usecase.UseCaseWithPropsDecorator[string, []dtos.EventDto],
 	getEventByIdUsecase usecase.UseCaseWithPropsDecorator[string, dtos.EventDto],
 	registerToEventUseCase usecase.UseCaseWithPropsDecorator[usecases.RegisterToEventUseCaseProps, []string],
@@ -38,6 +46,8 @@ func NewEventsController(
 	return &EventsController{
 		getEventsUseCase: getEventsUseCase,
 		createEventUseCase: createEventUseCase,
+		updateEventUseCase: updateEventUseCase,
+		deleteEventUseCase: deleteEventUseCase,
 		getEventsByUserUseCase: getEventsByUserUseCase,
 		getEventByIdUseCase: getEventByIdUsecase,
 		registerToEventUseCase: registerToEventUseCase,
@@ -64,22 +74,26 @@ func (ec EventsController) CreateEvent(c *gin.Context) {
 		c.JSON(400, userIDRequired)
 		return
 	}
-
+	
 	body := dtos.CreateEventProps{}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request body"})
+		log.Printf("Binding error: %v", err)
+		c.JSON(400, gin.H{"error": "Invalid request body", "details": err.Error()})
 		return
 	}
 
+	log.Printf("Parsed event data: %+v", body)
 	body.OrganizerID = userID.(string)
 
-	_, err := ec.createEventUseCase.Execute(body)
+	createdEvent, err := ec.createEventUseCase.Execute(body)
 	if err != nil {
+		log.Printf(useCaseErrorLog, err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(201, gin.H{"message": "Event created successfully"})
+	log.Printf("Event created successfully: %+v", createdEvent)
+	c.JSON(201, createdEvent)
 }
 
 func (ec EventsController) GetEventsByUser(c *gin.Context) {
@@ -216,13 +230,79 @@ func (ec EventsController) GetEventsByTerm(c *gin.Context) {
 	c.JSON(200, events)
 }
 
+func (ec EventsController) UpdateEvent(c *gin.Context) {
+	eventID := c.Param("eventID")
+	userID, exists := c.Get("userID")
+	if !exists || userID == "" {
+		c.JSON(400, userIDRequired)
+		return
+	}
+
+	if eventID == "" {
+		c.JSON(400, eventIDRequired)
+		return
+	}
+
+	body := dtos.UpdateEventProps{}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		log.Printf("Binding error: %v", err)
+		c.JSON(400, gin.H{"error": "Invalid request body", "details": err.Error()})
+		return
+	}
+
+	// Set the event ID and organizer ID from path and auth
+	body.EventID = eventID
+	body.OrganizerID = userID.(string)
+
+	updatedEvent, err := ec.updateEventUseCase.Execute(body)
+	if err != nil {
+		log.Printf(useCaseErrorLog, err)
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	log.Printf("Event updated successfully: %+v", updatedEvent)
+	c.JSON(200, updatedEvent)
+}
+
+func (ec EventsController) DeleteEvent(c *gin.Context) {
+	eventID := c.Param("eventID")
+	userID, exists := c.Get("userID")
+	if !exists || userID == "" {
+		c.JSON(400, userIDRequired)
+		return
+	}
+
+	if eventID == "" {
+		c.JSON(400, eventIDRequired)
+		return
+	}
+
+	props := usecases.DeleteEventProps{
+		EventID:     eventID,
+		OrganizerID: userID.(string),
+	}
+
+	_, err := ec.deleteEventUseCase.Execute(props)
+	if err != nil {
+		log.Printf(useCaseErrorLog, err)
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	log.Printf("Event deleted successfully: %s", eventID)
+	c.JSON(200, gin.H{"message": "Event deleted successfully"})
+}
+
 func (ec EventsController) SetupRoutes() {
 	group := r.Router.Group("/events")
 
 	group.GET("/", ec.GetAllEvents)
 	group.POST("/", ec.CreateEvent)
 	group.GET("/registered", ec.GetEventsByUser)
-	group.GET("/:eventID", ec.GetEventById)
+	group.GET(eventIDRoute, ec.GetEventById)
+	group.PUT(eventIDRoute, ec.UpdateEvent)
+	group.DELETE(eventIDRoute, ec.DeleteEvent)
 	group.POST("/:eventID/register", ec.RegisterToEvent)
 	group.GET("/:eventID/organizer", ec.GetEventByOrganizer)
 	group.GET("/organizer", ec.GetEventsByOrganizer)
