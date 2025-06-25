@@ -45,6 +45,7 @@ type Event interface {
     Category() string
     Limit() int
     AddAttendee(attendee string) error
+    CancelSubscription(attendee string) error
 }
 
 func NewEvent(props EventProps) (Event, error) {
@@ -120,6 +121,21 @@ func (e *event) AddAttendee(attendee string) error {
     e.attendees = append(e.attendees, attendee)
     
     return nil
+}
+
+func (e *event) CancelSubscription(attendee string) error {
+    if attendee == "" {
+        return exceptions.NewBusinessException("Attendee cannot be empty")
+    }
+
+    for i, a := range e.attendees {
+        if a == attendee {
+            e.attendees = append(e.attendees[:i], e.attendees[i+1:]...)
+            return nil
+        }
+    }
+
+    return exceptions.NewBusinessException("Attendee not subscribed to the event")
 }
 
 func (e *event) ID() string { return e.id }
