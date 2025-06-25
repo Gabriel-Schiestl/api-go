@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/Gabriel-Schiestl/api-go/internal/controllers"
 	_ "github.com/Gabriel-Schiestl/api-go/internal/controllers"
@@ -17,6 +18,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading env: %v", err)
 	}
+
+	loc, err := time.LoadLocation("America/Sao_Paulo")
+	if err != nil {
+		log.Fatalf("Error loading location: %v", err)
+	}
+	time.Local = loc
 
 	sqlDb := connection.SetupConfig(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
 	defer sqlDb.Close()
