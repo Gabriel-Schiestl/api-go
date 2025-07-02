@@ -37,7 +37,6 @@ func (uc *getEventByIdUseCase) Execute(props GetEventByIdUseCaseProps) (dtos.Eve
 		Description: event.Description(),
 		Location:    event.Location(),
 		Date:        event.Date(),
-		OrganizerID: event.OrganizerID(),
 		CreatedAt:   event.CreatedAt(),
 		Category: 	 event.Category(),
 		Limit:       event.Limit(),
@@ -76,12 +75,23 @@ func (uc *getEventByIdUseCase) Execute(props GetEventByIdUseCaseProps) (dtos.Eve
 			users = append(users, dtos.UserResponseDTO{
 				ID:        user.GetID(),
 				Email:     user.GetEmail(),
-				Name: user.GetName(),
+				Name: 	   user.GetName(),
 				CreatedAt: user.GetCreatedAt().String(),
 			})
 		}
 	}
 
+	organizer, err := uc.userRepo.FindById(event.OrganizerID())
+	if err != nil {
+		return dtos.EventWithAttendeesDto{}, err
+	}
+
+	eventDto.Organizer = dtos.UserResponseDTO{
+		ID:        organizer.GetID(),
+		Email:     organizer.GetEmail(),
+		Name: 	   organizer.GetName(),
+		CreatedAt: organizer.GetCreatedAt().String(),
+	}
 	eventDto.Attendees = users
 	
 	return eventDto, nil

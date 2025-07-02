@@ -20,24 +20,21 @@ func NewUpdateEventUseCase(eventRepository repositories.IEventRepository) *updat
 }
 
 func (uc *updateEventUseCase) Execute(props dtos.UpdateEventProps) (*dtos.EventDto, error) {
-	// Verifica se o evento existe
 	existingEvent, err := uc.eventRepository.FindByID(props.EventID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Verifica se o usuário é o organizador do evento
 	if existingEvent.OrganizerID() != props.OrganizerID {
 		return nil, exceptions.NewBusinessException("User is not authorized to update this event")
 	}
 
-	// Parse da data
 	parsedDate, err := time.Parse("2006-01-02T15:04", props.Date)
 	if err != nil {
 		return nil, err
 	}
+	parsedDate = parsedDate.UTC()
 
-	// Cria o evento atualizado mantendo ID, attendees e createdAt originais
 	originalCreatedAt := existingEvent.CreatedAt()
 	updatedEvent, businessErr := models.NewEvent(models.EventProps{
 		ID:          &props.EventID,
